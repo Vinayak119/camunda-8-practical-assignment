@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_Order" targetNamespace="http://example.edu/camunda/order">
+ <bpmn:process id="ecommerceOrderProcess" name="Lab 2 - E-commerce Order Fulfilment" isExecutable="true">
+  <bpmn:startEvent id="Start" name="Order received"><bpmn:outgoing>f1</bpmn:outgoing></bpmn:startEvent>
+  <bpmn:serviceTask id="ValidateStock" name="Validate order and check inventory"><bpmn:extensionElements><zeebe:taskDefinition type="order-validate-inventory"/></bpmn:extensionElements><bpmn:incoming>f1</bpmn:incoming><bpmn:outgoing>f2</bpmn:outgoing></bpmn:serviceTask>
+  <bpmn:exclusiveGateway id="StockGateway" name="Stock available?"><bpmn:incoming>f2</bpmn:incoming><bpmn:outgoing>stockYes</bpmn:outgoing><bpmn:outgoing>stockNo</bpmn:outgoing></bpmn:exclusiveGateway>
+  <bpmn:businessRuleTask id="PriorityDecision" name="Determine priority using DMN" camunda:decisionRef="orderPriorityDecision" camunda:resultVariable="orderPriorityResult"><bpmn:incoming>stockYes</bpmn:incoming><bpmn:outgoing>f3</bpmn:outgoing></bpmn:businessRuleTask>
+  <bpmn:exclusiveGateway id="PriorityGateway" name="High value order?"><bpmn:incoming>f3</bpmn:incoming><bpmn:outgoing>high</bpmn:outgoing><bpmn:outgoing>normal</bpmn:outgoing></bpmn:exclusiveGateway>
+  <bpmn:userTask id="ManualReview" name="Manual high-value order verification"><bpmn:incoming>high</bpmn:incoming><bpmn:outgoing>reviewDone</bpmn:outgoing></bpmn:userTask>
+  <bpmn:serviceTask id="Payment" name="Process mock payment"><bpmn:extensionElements><zeebe:taskDefinition type="order-payment"/></bpmn:extensionElements><bpmn:incoming>normal</bpmn:incoming><bpmn:incoming>reviewDone</bpmn:incoming><bpmn:outgoing>f4</bpmn:outgoing></bpmn:serviceTask>
+  <bpmn:exclusiveGateway id="PaymentGateway" name="Payment approved?"><bpmn:incoming>f4</bpmn:incoming><bpmn:outgoing>paid</bpmn:outgoing><bpmn:outgoing>declined</bpmn:outgoing></bpmn:exclusiveGateway>
+  <bpmn:serviceTask id="Finalize" name="Set order status"><bpmn:extensionElements><zeebe:taskDefinition type="order-finalize"/></bpmn:extensionElements><bpmn:incoming>paid</bpmn:incoming><bpmn:incoming>declined</bpmn:incoming><bpmn:incoming>stockNo</bpmn:incoming><bpmn:outgoing>f5</bpmn:outgoing></bpmn:serviceTask>
+  <bpmn:endEvent id="End" name="Order processed"><bpmn:incoming>f5</bpmn:incoming></bpmn:endEvent>
+  <bpmn:sequenceFlow id="f1" sourceRef="Start" targetRef="ValidateStock"/><bpmn:sequenceFlow id="f2" sourceRef="ValidateStock" targetRef="StockGateway"/>
+  <bpmn:sequenceFlow id="stockYes" sourceRef="StockGateway" targetRef="PriorityDecision"><bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">= stockAvailable = true</bpmn:conditionExpression></bpmn:sequenceFlow>
+  <bpmn:sequenceFlow id="stockNo" sourceRef="StockGateway" targetRef="Finalize"><bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">= stockAvailable = false</bpmn:conditionExpression></bpmn:sequenceFlow>
+  <bpmn:sequenceFlow id="f3" sourceRef="PriorityDecision" targetRef="PriorityGateway"/>
+  <bpmn:sequenceFlow id="high" sourceRef="PriorityGateway" targetRef="ManualReview"><bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">= orderPriorityResult.priority = "High"</bpmn:conditionExpression></bpmn:sequenceFlow>
+  <bpmn:sequenceFlow id="normal" sourceRef="PriorityGateway" targetRef="Payment"><bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">= orderPriorityResult.priority != "High"</bpmn:conditionExpression></bpmn:sequenceFlow>
+  <bpmn:sequenceFlow id="reviewDone" sourceRef="ManualReview" targetRef="Payment"/>
+  <bpmn:sequenceFlow id="f4" sourceRef="Payment" targetRef="PaymentGateway"/>
+  <bpmn:sequenceFlow id="paid" sourceRef="PaymentGateway" targetRef="Finalize"><bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">= paymentStatus = "APPROVED"</bpmn:conditionExpression></bpmn:sequenceFlow>
+  <bpmn:sequenceFlow id="declined" sourceRef="PaymentGateway" targetRef="Finalize"><bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">= paymentStatus = "DECLINED"</bpmn:conditionExpression></bpmn:sequenceFlow>
+  <bpmn:sequenceFlow id="f5" sourceRef="Finalize" targetRef="End"/>
+ </bpmn:process>
+</bpmn:definitions>
