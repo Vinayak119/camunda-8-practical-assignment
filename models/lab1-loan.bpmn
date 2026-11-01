@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+ xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+ xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+ xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+ xmlns:zeebe="http://camunda.org/schema/zeebe/1.0"
+ xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+ id="Definitions_Loan" targetNamespace="http://example.edu/camunda/loan">
+ <bpmn:process id="loanApprovalProcess" name="Lab 1 - Loan Approval" isExecutable="true">
+  <bpmn:startEvent id="Start" name="Application received"><bpmn:outgoing>f1</bpmn:outgoing></bpmn:startEvent>
+  <bpmn:serviceTask id="Validate" name="Validate applicant"><bpmn:extensionElements><zeebe:taskDefinition type="loan-validate"/></bpmn:extensionElements><bpmn:incoming>f1</bpmn:incoming><bpmn:outgoing>f2</bpmn:outgoing></bpmn:serviceTask>
+  <bpmn:exclusiveGateway id="ValidGateway" name="Valid application?"><bpmn:incoming>f2</bpmn:incoming><bpmn:outgoing>validYes</bpmn:outgoing><bpmn:outgoing>validNo</bpmn:outgoing></bpmn:exclusiveGateway>
+  <bpmn:serviceTask id="CreditCheck" name="Assess credit via mock REST API"><bpmn:extensionElements><zeebe:taskDefinition type="loan-credit-check"/></bpmn:extensionElements><bpmn:incoming>validYes</bpmn:incoming><bpmn:outgoing>f3</bpmn:outgoing></bpmn:serviceTask>
+  <bpmn:businessRuleTask id="LoanDecision" name="Evaluate loan DMN" camunda:decisionRef="loanDecision" camunda:resultVariable="loanDecisionResult"><bpmn:incoming>f3</bpmn:incoming><bpmn:outgoing>f4</bpmn:outgoing></bpmn:businessRuleTask>
+  <bpmn:exclusiveGateway id="DecisionGateway" name="Decision route"><bpmn:incoming>f4</bpmn:incoming><bpmn:outgoing>approved</bpmn:outgoing><bpmn:outgoing>rejected</bpmn:outgoing><bpmn:outgoing>manual</bpmn:outgoing></bpmn:exclusiveGateway>
+  <bpmn:userTask id="ManualReview" name="Manual loan review"><bpmn:incoming>manual</bpmn:incoming><bpmn:outgoing>reviewEnd</bpmn:outgoing></bpmn:userTask>
+  <bpmn:serviceTask id="Finalize" name="Set final loan status"><bpmn:extensionElements><zeebe:taskDefinition type="loan-finalize"/></bpmn:extensionElements><bpmn:incoming>approved</bpmn:incoming><bpmn:incoming>rejected</bpmn:incoming><bpmn:incoming>reviewEnd</bpmn:incoming><bpmn:incoming>validNo</bpmn:incoming><bpmn:outgoing>f5</bpmn:outgoing></bpmn:serviceTask>
+  <bpmn:endEvent id="End" name="Application completed"><bpmn:incoming>f5</bpmn:incoming></bpmn:endEvent>
+  <bpmn:sequenceFlow id="f1" sourceRef="Start" targetRef="Validate"/>
+  <bpmn:sequenceFlow id="f2" sourceRef="Validate" targetRef="ValidGateway"/>
+  <bpmn:sequenceFlow id="validYes" sourceRef="ValidGateway" targetRef="CreditCheck"><bpmn:conditionExpression xsi:type="bpmn:tFormalExpression" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">= validationPassed = true</bpmn:conditionExpression></bpmn:sequenceFlow>
+  <bpmn:sequenceFlow id="validNo" sourceRef="ValidGateway" targetRef="Finalize"><bpmn:conditionExpression xsi:type="bpmn:tFormalExpression" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">= validationPassed = false</bpmn:conditionExpression></bpmn:sequenceFlow>
+  <bpmn:sequenceFlow id="f3" sourceRef="CreditCheck" targetRef="LoanDecision"/>
+  <bpmn:sequenceFlow id="f4" sourceRef="LoanDecision" targetRef="DecisionGateway"/>
+  <bpmn:sequenceFlow id="approved" sourceRef="DecisionGateway" targetRef="Finalize"><bpmn:conditionExpression xsi:type="bpmn:tFormalExpression" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">= loanDecisionResult.decision = "Approved"</bpmn:conditionExpression></bpmn:sequenceFlow>
+  <bpmn:sequenceFlow id="rejected" sourceRef="DecisionGateway" targetRef="Finalize"><bpmn:conditionExpression xsi:type="bpmn:tFormalExpression" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">= loanDecisionResult.decision = "Rejected"</bpmn:conditionExpression></bpmn:sequenceFlow>
+  <bpmn:sequenceFlow id="manual" sourceRef="DecisionGateway" targetRef="ManualReview"><bpmn:conditionExpression xsi:type="bpmn:tFormalExpression" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">= loanDecisionResult.decision = "Manual Review"</bpmn:conditionExpression></bpmn:sequenceFlow>
+  <bpmn:sequenceFlow id="reviewEnd" sourceRef="ManualReview" targetRef="Finalize"/>
+  <bpmn:sequenceFlow id="f5" sourceRef="Finalize" targetRef="End"/>
+ </bpmn:process>
+</bpmn:definitions>
