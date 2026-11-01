@@ -1,0 +1,22 @@
+{
+  "lab1-loan": [
+    {"name":"eligible applicant","variables":{"applicantId":"SYN-LOAN-001","requestedAmount":10000,"monthlyIncome":5000,"employmentYears":4,"creditScore":740}},
+    {"name":"low income / amount ratio","variables":{"applicantId":"SYN-LOAN-002","requestedAmount":50000,"monthlyIncome":1500,"employmentYears":1,"creditScore":700}},
+    {"name":"manual review borderline","variables":{"applicantId":"SYN-LOAN-003","requestedAmount":20000,"monthlyIncome":3000,"employmentYears":2,"creditScore":640}},
+    {"name":"credit API failure","variables":{"applicantId":"SYN-LOAN-004","requestedAmount":12000,"monthlyIncome":4000,"creditScore":700,"simulateFailure":true}}
+  ],
+  "lab2-ecommerce": [
+    {"name":"normal paid order","variables":{"customerRef":"SYN-CUST-001","productId":"SKU-101","quantity":2,"unitPrice":25.5,"deliveryPreference":"Standard","customerCategory":"Regular","paymentToken":"TEST-OK"}},
+    {"name":"out of stock","variables":{"customerRef":"SYN-CUST-002","productId":"SKU-102","quantity":20,"unitPrice":10,"deliveryPreference":"Standard","customerCategory":"Regular","paymentToken":"TEST-OK"}},
+    {"name":"declined payment","variables":{"customerRef":"SYN-CUST-003","productId":"SKU-103","quantity":1,"unitPrice":50,"paymentToken":"DECLINE"}},
+    {"name":"high value review","variables":{"customerRef":"SYN-CUST-004","productId":"SKU-104","quantity":5,"unitPrice":500,"deliveryPreference":"Express","customerCategory":"VIP","paymentToken":"TEST-OK"}},
+    {"name":"inventory API failure","variables":{"customerRef":"SYN-CUST-005","productId":"SKU-105","quantity":1,"unitPrice":20,"simulateFailure":true}}
+  ],
+  "lab3-hospital": [
+    {"name":"routine slot available","variables":{"patientRef":"SYN-PAT-001","appointmentPreference":"Morning","symptomsSummary":"Routine follow-up","urgencyIndicator":0}},
+    {"name":"priority review","variables":{"patientRef":"SYN-PAT-002","appointmentPreference":"Afternoon","symptomsSummary":"Needs timely review","urgencyIndicator":1}},
+    {"name":"urgent assessment","variables":{"patientRef":"SYN-PAT-003","appointmentPreference":"Soonest","symptomsSummary":"Educational urgent flag","urgencyIndicator":2}},
+    {"name":"no slots","variables":{"patientRef":"SYN-PAT-004","appointmentPreference":"Morning","symptomsSummary":"Routine follow-up","urgencyIndicator":0,"forceNoSlots":true}},
+    {"name":"scheduling API failure","variables":{"patientRef":"SYN-PAT-005","appointmentPreference":"Morning","symptomsSummary":"Synthetic test","urgencyIndicator":0,"simulateFailure":true}}
+  ]
+}
