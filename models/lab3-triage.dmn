@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" id="Definitions_TriageDMN" name="Educational Triage Rules" namespace="http://example.edu/camunda/hospital">
+ <decision id="triageDecision" name="Educational triage category">
+  <decisionTable id="TriageTable" hitPolicy="FIRST">
+   <input id="i1" label="Urgency indicator (synthetic)"><inputExpression id="ie1" typeRef="number"><text>urgencyIndicator</text></inputExpression></input>
+   <output id="o1" name="category" label="Category" typeRef="string"/>
+   <rule><inputEntry id="r1i"><text>&gt;= 2</text></inputEntry><outputEntry id="r1o"><text>"Urgent Assessment"</text></outputEntry></rule>
+   <rule><inputEntry id="r2i"><text>1</text></inputEntry><outputEntry id="r2o"><text>"Priority Review"</text></outputEntry></rule>
+   <rule><inputEntry id="r3i"><text>&lt;= 0</text></inputEntry><outputEntry id="r3o"><text>"Routine"</text></outputEntry></rule>
+   <rule><inputEntry id="r4i"><text>-</text></inputEntry><outputEntry id="r4o"><text>"Priority Review"</text></outputEntry></rule>
+  </decisionTable>
+ </decision>
+</definitions>
