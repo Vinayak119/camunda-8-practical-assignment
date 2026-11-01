@@ -1,0 +1,17 @@
+# Local runtime configuration and credentials
+**/application.yml
+**/application-local.yml
+.env
+.env.*
+!.env.example
+
+# Maven build output
+**/target/
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+
+# Logs
+*.log
