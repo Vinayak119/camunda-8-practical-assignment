@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" id="Definitions_LoanDMN" name="Loan Decision" namespace="http://example.edu/camunda/loan">
+ <decision id="loanDecision" name="Loan eligibility">
+  <decisionTable id="LoanTable" hitPolicy="FIRST">
+   <input id="i1" label="Validation passed"><inputExpression id="ie1" typeRef="boolean"><text>validationPassed</text></inputExpression></input>
+   <input id="i2" label="Monthly income"><inputExpression id="ie2" typeRef="number"><text>monthlyIncome</text></inputExpression></input>
+   <input id="i3" label="Requested amount"><inputExpression id="ie3" typeRef="number"><text>requestedAmount</text></inputExpression></input>
+   <input id="i4" label="Credit status"><inputExpression id="ie4" typeRef="string"><text>creditStatus</text></inputExpression></input>
+   <output id="o1" name="decision" label="Decision" typeRef="string"/>
+   <rule><inputEntry id="r1i1"><text>false</text></inputEntry><inputEntry id="r1i2"><text>-</text></inputEntry><inputEntry id="r1i3"><text>-</text></inputEntry><inputEntry id="r1i4"><text>-</text></inputEntry><outputEntry id="r1o"><text>"Rejected"</text></outputEntry></rule>
+   <rule><inputEntry id="r2i1"><text>true</text></inputEntry><inputEntry id="r2i2"><text>&gt; 0</text></inputEntry><inputEntry id="r2i3"><text>&lt;= monthlyIncome * 10</text></inputEntry><inputEntry id="r2i4"><text>"PASS"</text></inputEntry><outputEntry id="r2o"><text>"Approved"</text></outputEntry></rule>
+   <rule><inputEntry id="r3i1"><text>true</text></inputEntry><inputEntry id="r3i2"><text>&gt; 0</text></inputEntry><inputEntry id="r3i3"><text>&gt; monthlyIncome * 10</text></inputEntry><inputEntry id="r3i4"><text>-</text></inputEntry><outputEntry id="r3o"><text>"Manual Review"</text></outputEntry></rule>
+   <rule><inputEntry id="r4i1"><text>true</text></inputEntry><inputEntry id="r4i2"><text>&gt; 0</text></inputEntry><inputEntry id="r4i3"><text>-</text></inputEntry><inputEntry id="r4i4"><text>"FAIL"</text></inputEntry><outputEntry id="r4o"><text>"Rejected"</text></outputEntry></rule>
+   <rule><inputEntry id="r5i1"><text>true</text></inputEntry><inputEntry id="r5i2"><text>&gt; 0</text></inputEntry><inputEntry id="r5i3"><text>-</text></inputEntry><inputEntry id="r5i4"><text>-</text></inputEntry><outputEntry id="r5o"><text>"Manual Review"</text></outputEntry></rule>
+  </decisionTable>
+ </decision>
+</definitions>
