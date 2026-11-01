@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_Hospital" targetNamespace="http://example.edu/camunda/hospital">
+ <bpmn:process id="hospitalAppointmentProcess" name="Lab 3 - Appointment and Triage" isExecutable="true">
+  <bpmn:startEvent id="Start" name="Appointment request"><bpmn:outgoing>f1</bpmn:outgoing></bpmn:startEvent>
+  <bpmn:serviceTask id="RegisterSlots" name="Validate registration and query mock schedule"><bpmn:extensionElements><zeebe:taskDefinition type="hospital-register-and-slots"/></bpmn:extensionElements><bpmn:incoming>f1</bpmn:incoming><bpmn:outgoing>f2</bpmn:outgoing></bpmn:serviceTask>
+  <bpmn:businessRuleTask id="TriageDecision" name="Classify request using DMN" camunda:decisionRef="triageDecision" camunda:resultVariable="triageResult"><bpmn:incoming>f2</bpmn:incoming><bpmn:outgoing>f3</bpmn:outgoing></bpmn:businessRuleTask>
+  <bpmn:exclusiveGateway id="TriageGateway" name="Urgency category"><bpmn:incoming>f3</bpmn:incoming><bpmn:outgoing>urgent</bpmn:outgoing><bpmn:outgoing>review</bpmn:outgoing><bpmn:outgoing>routine</bpmn:outgoing></bpmn:exclusiveGateway>
+  <bpmn:userTask id="UrgentAssessment" name="Immediate human assessment (simulation)"><bpmn:incoming>urgent</bpmn:incoming><bpmn:outgoing>urgentDone</bpmn:outgoing></bpmn:userTask>
+  <bpmn:userTask id="StaffReview" name="Staff review / no-slot follow-up"><bpmn:incoming>review</bpmn:incoming><bpmn:incoming>noSlots</bpmn:incoming><bpmn:outgoing>reviewDone</bpmn:outgoing></bpmn:userTask>
+  <bpmn:exclusiveGateway id="SlotsGateway" name="Slot available?"><bpmn:incoming>routine</bpmn:incoming><bpmn:outgoing>hasSlot</bpmn:outgoing><bpmn:outgoing>noSlots</bpmn:outgoing></bpmn:exclusiveGateway>
+  <bpmn:serviceTask id="Finalize" name="Set appointment status"><bpmn:extensionElements><zeebe:taskDefinition type="hospital-finalize"/></bpmn:extensionElements><bpmn:incoming>urgentDone</bpmn:incoming><bpmn:incoming>reviewDone</bpmn:incoming><bpmn:incoming>hasSlot</bpmn:incoming><bpmn:outgoing>f4</bpmn:outgoing></bpmn:serviceTask>
+  <bpmn:endEvent id="End" name="Request handled"><bpmn:incoming>f4</bpmn:incoming></bpmn:endEvent>
+  <bpmn:sequenceFlow id="f1" sourceRef="Start" targetRef="RegisterSlots"/><bpmn:sequenceFlow id="f2" sourceRef="RegisterSlots" targetRef="TriageDecision"/><bpmn:sequenceFlow id="f3" sourceRef="TriageDecision" targetRef="TriageGateway"/>
+  <bpmn:sequenceFlow id="urgent" sourceRef="TriageGateway" targetRef="UrgentAssessment"><bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">= triageResult.category = "Urgent Assessment"</bpmn:conditionExpression></bpmn:sequenceFlow>
+  <bpmn:sequenceFlow id="review" sourceRef="TriageGateway" targetRef="StaffReview"><bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">= triageResult.category = "Priority Review"</bpmn:conditionExpression></bpmn:sequenceFlow>
+  <bpmn:sequenceFlow id="routine" sourceRef="TriageGateway" targetRef="SlotsGateway"><bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">= triageResult.category = "Routine"</bpmn:conditionExpression></bpmn:sequenceFlow>
+  <bpmn:sequenceFlow id="urgentDone" sourceRef="UrgentAssessment" targetRef="Finalize"/>
+  <bpmn:sequenceFlow id="hasSlot" sourceRef="SlotsGateway" targetRef="Finalize"><bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">= hasAvailability = true</bpmn:conditionExpression></bpmn:sequenceFlow>
+  <bpmn:sequenceFlow id="noSlots" sourceRef="SlotsGateway" targetRef="StaffReview"><bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">= hasAvailability = false</bpmn:conditionExpression></bpmn:sequenceFlow>
+  <bpmn:sequenceFlow id="reviewDone" sourceRef="StaffReview" targetRef="Finalize"/><bpmn:sequenceFlow id="f4" sourceRef="Finalize" targetRef="End"/>
+ </bpmn:process>
+</bpmn:definitions>
