@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" id="Definitions_OrderDMN" name="Order Priority" namespace="http://example.edu/camunda/order">
+ <decision id="orderPriorityDecision" name="Order priority">
+  <decisionTable id="PriorityTable" hitPolicy="FIRST">
+   <input id="i1" label="Order value"><inputExpression id="ie1" typeRef="number"><text>orderValue</text></inputExpression></input>
+   <input id="i2" label="Customer category"><inputExpression id="ie2" typeRef="string"><text>customerCategory</text></inputExpression></input>
+   <input id="i3" label="Delivery preference"><inputExpression id="ie3" typeRef="string"><text>deliveryPreference</text></inputExpression></input>
+   <output id="o1" name="priority" label="Priority" typeRef="string"/>
+   <rule><inputEntry id="r1i1"><text>&gt;= 1000</text></inputEntry><inputEntry id="r1i2"><text>-</text></inputEntry><inputEntry id="r1i3"><text>-</text></inputEntry><outputEntry id="r1o"><text>"High"</text></outputEntry></rule>
+   <rule><inputEntry id="r2i1"><text>&gt;= 500</text></inputEntry><inputEntry id="r2i2"><text>"VIP"</text></inputEntry><inputEntry id="r2i3"><text>-</text></inputEntry><outputEntry id="r2o"><text>"High"</text></outputEntry></rule>
+   <rule><inputEntry id="r3i1"><text>-</text></inputEntry><inputEntry id="r3i2"><text>"VIP"</text></inputEntry><inputEntry id="r3i3"><text>"Express"</text></inputEntry><outputEntry id="r3o"><text>"High"</text></outputEntry></rule>
+   <rule><inputEntry id="r4i1"><text>-</text></inputEntry><inputEntry id="r4i2"><text>-</text></inputEntry><inputEntry id="r4i3"><text>-</text></inputEntry><outputEntry id="r4o"><text>"Standard"</text></outputEntry></rule>
+  </decisionTable>
+ </decision>
+</definitions>
