@@ -4,16 +4,15 @@
  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
  xmlns:zeebe="http://camunda.org/schema/zeebe/1.0"
- xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
  id="Definitions_Loan" targetNamespace="http://example.edu/camunda/loan">
  <bpmn:process id="loanApprovalProcess" name="Lab 1 - Loan Approval" isExecutable="true">
   <bpmn:startEvent id="Start" name="Application received"><bpmn:outgoing>f1</bpmn:outgoing></bpmn:startEvent>
   <bpmn:serviceTask id="Validate" name="Validate applicant"><bpmn:extensionElements><zeebe:taskDefinition type="loan-validate"/></bpmn:extensionElements><bpmn:incoming>f1</bpmn:incoming><bpmn:outgoing>f2</bpmn:outgoing></bpmn:serviceTask>
   <bpmn:exclusiveGateway id="ValidGateway" name="Valid application?"><bpmn:incoming>f2</bpmn:incoming><bpmn:outgoing>validYes</bpmn:outgoing><bpmn:outgoing>validNo</bpmn:outgoing></bpmn:exclusiveGateway>
   <bpmn:serviceTask id="CreditCheck" name="Assess credit via mock REST API"><bpmn:extensionElements><zeebe:taskDefinition type="loan-credit-check"/></bpmn:extensionElements><bpmn:incoming>validYes</bpmn:incoming><bpmn:outgoing>f3</bpmn:outgoing></bpmn:serviceTask>
-  <bpmn:businessRuleTask id="LoanDecision" name="Evaluate loan DMN" camunda:decisionRef="loanDecision" camunda:resultVariable="loanDecisionResult"><bpmn:incoming>f3</bpmn:incoming><bpmn:outgoing>f4</bpmn:outgoing></bpmn:businessRuleTask>
+  <bpmn:businessRuleTask id="LoanDecision" name="Evaluate loan DMN"><bpmn:extensionElements><zeebe:calledDecision decisionId="loanDecision" resultVariable="loanDecisionResult"/></bpmn:extensionElements><bpmn:incoming>f3</bpmn:incoming><bpmn:outgoing>f4</bpmn:outgoing></bpmn:businessRuleTask>
   <bpmn:exclusiveGateway id="DecisionGateway" name="Decision route"><bpmn:incoming>f4</bpmn:incoming><bpmn:outgoing>approved</bpmn:outgoing><bpmn:outgoing>rejected</bpmn:outgoing><bpmn:outgoing>manual</bpmn:outgoing></bpmn:exclusiveGateway>
-  <bpmn:userTask id="ManualReview" name="Manual loan review"><bpmn:incoming>manual</bpmn:incoming><bpmn:outgoing>reviewEnd</bpmn:outgoing></bpmn:userTask>
+  <bpmn:userTask id="ManualReview" name="Manual loan review"><bpmn:extensionElements><zeebe:assignmentDefinition assignee="demo"/><zeebe:userTask/></bpmn:extensionElements><bpmn:incoming>manual</bpmn:incoming><bpmn:outgoing>reviewEnd</bpmn:outgoing></bpmn:userTask>
   <bpmn:serviceTask id="Finalize" name="Set final loan status"><bpmn:extensionElements><zeebe:taskDefinition type="loan-finalize"/></bpmn:extensionElements><bpmn:incoming>approved</bpmn:incoming><bpmn:incoming>rejected</bpmn:incoming><bpmn:incoming>reviewEnd</bpmn:incoming><bpmn:incoming>validNo</bpmn:incoming><bpmn:outgoing>f5</bpmn:outgoing></bpmn:serviceTask>
   <bpmn:endEvent id="End" name="Application completed"><bpmn:incoming>f5</bpmn:incoming></bpmn:endEvent>
   <bpmn:sequenceFlow id="f1" sourceRef="Start" targetRef="Validate"/>
@@ -28,4 +27,25 @@
   <bpmn:sequenceFlow id="reviewEnd" sourceRef="ManualReview" targetRef="Finalize"/>
   <bpmn:sequenceFlow id="f5" sourceRef="Finalize" targetRef="End"/>
  </bpmn:process>
-</bpmn:definitions>
+<bpmndi:BPMNDiagram id="Diagram_loanApprovalProcess"><bpmndi:BPMNPlane id="Plane_loanApprovalProcess" bpmnElement="loanApprovalProcess">
+  <bpmndi:BPMNShape id="Shape_Start" bpmnElement="Start"><dc:Bounds x="90" y="190" width="36" height="36"/></bpmndi:BPMNShape>
+  <bpmndi:BPMNShape id="Shape_Validate" bpmnElement="Validate"><dc:Bounds x="200" y="168" width="120" height="80"/></bpmndi:BPMNShape>
+  <bpmndi:BPMNShape id="Shape_ValidGateway" bpmnElement="ValidGateway" isMarkerVisible="true"><dc:Bounds x="390" y="183" width="50" height="50"/></bpmndi:BPMNShape>
+  <bpmndi:BPMNShape id="Shape_CreditCheck" bpmnElement="CreditCheck"><dc:Bounds x="500" y="168" width="130" height="80"/></bpmndi:BPMNShape>
+  <bpmndi:BPMNShape id="Shape_LoanDecision" bpmnElement="LoanDecision"><dc:Bounds x="680" y="168" width="130" height="80"/></bpmndi:BPMNShape>
+  <bpmndi:BPMNShape id="Shape_DecisionGateway" bpmnElement="DecisionGateway" isMarkerVisible="true"><dc:Bounds x="870" y="183" width="50" height="50"/></bpmndi:BPMNShape>
+  <bpmndi:BPMNShape id="Shape_ManualReview" bpmnElement="ManualReview"><dc:Bounds x="980" y="330" width="140" height="80"/></bpmndi:BPMNShape>
+  <bpmndi:BPMNShape id="Shape_Finalize" bpmnElement="Finalize"><dc:Bounds x="1170" y="168" width="130" height="80"/></bpmndi:BPMNShape>
+  <bpmndi:BPMNShape id="Shape_End" bpmnElement="End"><dc:Bounds x="1370" y="190" width="36" height="36"/></bpmndi:BPMNShape>
+  <bpmndi:BPMNEdge id="Edge_f1" bpmnElement="f1"><di:waypoint x="126" y="208"/><di:waypoint x="200" y="208"/></bpmndi:BPMNEdge>
+  <bpmndi:BPMNEdge id="Edge_f2" bpmnElement="f2"><di:waypoint x="320" y="208"/><di:waypoint x="390" y="208"/></bpmndi:BPMNEdge>
+  <bpmndi:BPMNEdge id="Edge_validYes" bpmnElement="validYes"><di:waypoint x="440" y="208"/><di:waypoint x="500" y="208"/></bpmndi:BPMNEdge>
+  <bpmndi:BPMNEdge id="Edge_validNo" bpmnElement="validNo"><di:waypoint x="415" y="233"/><di:waypoint x="450" y="275"/><di:waypoint x="450" y="430"/><di:waypoint x="1135" y="430"/><di:waypoint x="1135" y="208"/><di:waypoint x="1170" y="208"/></bpmndi:BPMNEdge>
+  <bpmndi:BPMNEdge id="Edge_f3" bpmnElement="f3"><di:waypoint x="630" y="208"/><di:waypoint x="680" y="208"/></bpmndi:BPMNEdge>
+  <bpmndi:BPMNEdge id="Edge_f4" bpmnElement="f4"><di:waypoint x="810" y="208"/><di:waypoint x="870" y="208"/></bpmndi:BPMNEdge>
+  <bpmndi:BPMNEdge id="Edge_approved" bpmnElement="approved"><di:waypoint x="920" y="195"/><di:waypoint x="1170" y="195"/></bpmndi:BPMNEdge>
+  <bpmndi:BPMNEdge id="Edge_rejected" bpmnElement="rejected"><di:waypoint x="920" y="220"/><di:waypoint x="1050" y="220"/><di:waypoint x="1050" y="235"/><di:waypoint x="1170" y="235"/></bpmndi:BPMNEdge>
+  <bpmndi:BPMNEdge id="Edge_manual" bpmnElement="manual"><di:waypoint x="895" y="233"/><di:waypoint x="895" y="370"/><di:waypoint x="980" y="370"/></bpmndi:BPMNEdge>
+  <bpmndi:BPMNEdge id="Edge_reviewEnd" bpmnElement="reviewEnd"><di:waypoint x="1120" y="370"/><di:waypoint x="1235" y="370"/><di:waypoint x="1235" y="248"/></bpmndi:BPMNEdge>
+  <bpmndi:BPMNEdge id="Edge_f5" bpmnElement="f5"><di:waypoint x="1300" y="208"/><di:waypoint x="1370" y="208"/></bpmndi:BPMNEdge>
+ </bpmndi:BPMNPlane></bpmndi:BPMNDiagram></bpmn:definitions>
