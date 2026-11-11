@@ -33,7 +33,7 @@ public class MockApiController {
     public Map<String, Object> inventory(@RequestBody Map<String, Object> body) {
         maybeFail(body);
         int qty = number(body.getOrDefault("quantity", 1), 1);
-        boolean available = !Boolean.FALSE.equals(body.get("forceOutOfStock")) && qty <= 10;
+        boolean available = !Boolean.TRUE.equals(body.get("forceOutOfStock")) && qty > 0 && qty <= 10;
         return Map.of("stockAvailable", available, "availableQuantity", available ? 10 : 0);
     }
 
@@ -41,7 +41,7 @@ public class MockApiController {
     public Map<String, Object> appointments(@RequestBody Map<String, Object> body) {
         maybeFail(body);
         boolean noSlots = Boolean.TRUE.equals(body.get("forceNoSlots"));
-        List<String> slots = noSlots ? List.of() : List.of("2026-11-02T09:00:00", "2026-11-02T11:30:00");
+        List<String> slots = noSlots ? List.of() : List.of("2026-11-12T09:00:00", "2026-11-12T11:30:00");
         return Map.of("availableSlots", slots, "hasAvailability", !slots.isEmpty());
     }
 
