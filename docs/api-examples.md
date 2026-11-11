@@ -1,35 +1,26 @@
 # Mock REST API examples
 
-The Spring Boot worker application listens on port 8081. Start it before calling these endpoints.
+The Java worker and mock REST endpoints run on port 8081. Start Camunda Run and the worker before using these requests.
 
 ## Credit assessment
-```bash
-curl -X POST http://localhost:8081/mock/credit-assessment \
-  -H 'Content-Type: application/json' \
-  -d '{"creditScore":740}'
-```
-Example response: `{"creditScore":740,"creditStatus":"PASS"}`
+~~~powershell
+Invoke-RestMethod -Method Post -Uri "http://localhost:8081/mock/credit-assessment" -ContentType "application/json" -Body '{"creditScore":740}'
+~~~
 
 ## Inventory
-```bash
-curl -X POST http://localhost:8081/mock/inventory \
-  -H 'Content-Type: application/json' \
-  -d '{"productId":"SKU-101","quantity":2}'
-```
+~~~powershell
+Invoke-RestMethod -Method Post -Uri "http://localhost:8081/mock/inventory" -ContentType "application/json" -Body '{"productId":"SKU-101","quantity":2}'
+~~~
 
 ## Payment
-```bash
-curl -X POST http://localhost:8081/mock/payment \
-  -H 'Content-Type: application/json' \
-  -d '{"paymentToken":"TEST-OK"}'
-```
+~~~powershell
+Invoke-RestMethod -Method Post -Uri "http://localhost:8081/mock/payment" -ContentType "application/json" -Body '{"paymentToken":"TEST-OK"}'
+~~~
 
 ## Scheduling
-```bash
-curl -X POST http://localhost:8081/mock/appointments \
-  -H 'Content-Type: application/json' \
-  -d '{"patientRef":"SYN-PAT-001","forceNoSlots":false}'
-```
+~~~powershell
+Invoke-RestMethod -Method Post -Uri "http://localhost:8081/mock/appointments" -ContentType "application/json" -Body '{"patientRef":"SYN-PAT-001","forceNoSlots":false}'
+~~~
 
-## Simulate an outage
-Add `"simulateFailure": true` to any request body. The API returns HTTP 503. Never use real credentials or patient data.
+## Simulated outage
+Add `"simulateFailure": true` to a JSON body. The endpoint returns HTTP 503. Never use real payment credentials or patient data.
