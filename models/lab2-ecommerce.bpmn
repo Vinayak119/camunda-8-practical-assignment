@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_Order" targetNamespace="http://example.edu/camunda/order">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_Order" targetNamespace="http://example.edu/camunda/order">
  <bpmn:process id="ecommerceOrderProcess" name="Lab 2 - E-commerce Order Fulfilment" isExecutable="true">
   <bpmn:startEvent id="Start" name="Order received"><bpmn:outgoing>f1</bpmn:outgoing></bpmn:startEvent>
   <bpmn:serviceTask id="ValidateStock" name="Validate order and check inventory"><bpmn:extensionElements><zeebe:taskDefinition type="order-validate-inventory"/></bpmn:extensionElements><bpmn:incoming>f1</bpmn:incoming><bpmn:outgoing>f2</bpmn:outgoing></bpmn:serviceTask>
   <bpmn:exclusiveGateway id="StockGateway" name="Stock available?"><bpmn:incoming>f2</bpmn:incoming><bpmn:outgoing>stockYes</bpmn:outgoing><bpmn:outgoing>stockNo</bpmn:outgoing></bpmn:exclusiveGateway>
-  <bpmn:businessRuleTask id="PriorityDecision" name="Determine priority using DMN" camunda:decisionRef="orderPriorityDecision" camunda:resultVariable="orderPriorityResult"><bpmn:incoming>stockYes</bpmn:incoming><bpmn:outgoing>f3</bpmn:outgoing></bpmn:businessRuleTask>
+  <bpmn:businessRuleTask id="PriorityDecision" name="Determine priority using DMN"><bpmn:extensionElements><zeebe:calledDecision decisionId="orderPriorityDecision" resultVariable="orderPriorityResult"/></bpmn:extensionElements><bpmn:incoming>stockYes</bpmn:incoming><bpmn:outgoing>f3</bpmn:outgoing></bpmn:businessRuleTask>
   <bpmn:exclusiveGateway id="PriorityGateway" name="High value order?"><bpmn:incoming>f3</bpmn:incoming><bpmn:outgoing>high</bpmn:outgoing><bpmn:outgoing>normal</bpmn:outgoing></bpmn:exclusiveGateway>
-  <bpmn:userTask id="ManualReview" name="Manual high-value order verification"><bpmn:incoming>high</bpmn:incoming><bpmn:outgoing>reviewDone</bpmn:outgoing></bpmn:userTask>
+  <bpmn:userTask id="ManualReview" name="Manual high-value order verification"><bpmn:extensionElements><zeebe:assignmentDefinition assignee="demo"/><zeebe:userTask/></bpmn:extensionElements><bpmn:incoming>high</bpmn:incoming><bpmn:outgoing>reviewDone</bpmn:outgoing></bpmn:userTask>
   <bpmn:serviceTask id="Payment" name="Process mock payment"><bpmn:extensionElements><zeebe:taskDefinition type="order-payment"/></bpmn:extensionElements><bpmn:incoming>normal</bpmn:incoming><bpmn:incoming>reviewDone</bpmn:incoming><bpmn:outgoing>f4</bpmn:outgoing></bpmn:serviceTask>
   <bpmn:exclusiveGateway id="PaymentGateway" name="Payment approved?"><bpmn:incoming>f4</bpmn:incoming><bpmn:outgoing>paid</bpmn:outgoing><bpmn:outgoing>declined</bpmn:outgoing></bpmn:exclusiveGateway>
   <bpmn:serviceTask id="Finalize" name="Set order status"><bpmn:extensionElements><zeebe:taskDefinition type="order-finalize"/></bpmn:extensionElements><bpmn:incoming>paid</bpmn:incoming><bpmn:incoming>declined</bpmn:incoming><bpmn:incoming>stockNo</bpmn:incoming><bpmn:outgoing>f5</bpmn:outgoing></bpmn:serviceTask>
@@ -23,4 +23,27 @@
   <bpmn:sequenceFlow id="declined" sourceRef="PaymentGateway" targetRef="Finalize"><bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">= paymentStatus = "DECLINED"</bpmn:conditionExpression></bpmn:sequenceFlow>
   <bpmn:sequenceFlow id="f5" sourceRef="Finalize" targetRef="End"/>
  </bpmn:process>
-</bpmn:definitions>
+<bpmndi:BPMNDiagram id="Diagram_ecommerceOrderProcess"><bpmndi:BPMNPlane id="Plane_ecommerceOrderProcess" bpmnElement="ecommerceOrderProcess">
+  <bpmndi:BPMNShape id="Shape_Start" bpmnElement="Start"><dc:Bounds x="80" y="210" width="36" height="36"/></bpmndi:BPMNShape>
+  <bpmndi:BPMNShape id="Shape_ValidateStock" bpmnElement="ValidateStock"><dc:Bounds x="190" y="170" width="130" height="80"/></bpmndi:BPMNShape>
+  <bpmndi:BPMNShape id="Shape_StockGateway" bpmnElement="StockGateway" isMarkerVisible="true"><dc:Bounds x="385" y="185" width="50" height="50"/></bpmndi:BPMNShape>
+  <bpmndi:BPMNShape id="Shape_PriorityDecision" bpmnElement="PriorityDecision"><dc:Bounds x="495" y="170" width="130" height="80"/></bpmndi:BPMNShape>
+  <bpmndi:BPMNShape id="Shape_PriorityGateway" bpmnElement="PriorityGateway" isMarkerVisible="true"><dc:Bounds x="690" y="185" width="50" height="50"/></bpmndi:BPMNShape>
+  <bpmndi:BPMNShape id="Shape_ManualReview" bpmnElement="ManualReview"><dc:Bounds x="810" y="330" width="160" height="80"/></bpmndi:BPMNShape>
+  <bpmndi:BPMNShape id="Shape_Payment" bpmnElement="Payment"><dc:Bounds x="1000" y="170" width="130" height="80"/></bpmndi:BPMNShape>
+  <bpmndi:BPMNShape id="Shape_PaymentGateway" bpmnElement="PaymentGateway" isMarkerVisible="true"><dc:Bounds x="1190" y="185" width="50" height="50"/></bpmndi:BPMNShape>
+  <bpmndi:BPMNShape id="Shape_Finalize" bpmnElement="Finalize"><dc:Bounds x="1300" y="170" width="120" height="80"/></bpmndi:BPMNShape>
+  <bpmndi:BPMNShape id="Shape_End" bpmnElement="End"><dc:Bounds x="1490" y="210" width="36" height="36"/></bpmndi:BPMNShape>
+  <bpmndi:BPMNEdge id="Edge_f1" bpmnElement="f1"><di:waypoint x="116" y="228"/><di:waypoint x="190" y="210"/></bpmndi:BPMNEdge>
+  <bpmndi:BPMNEdge id="Edge_f2" bpmnElement="f2"><di:waypoint x="320" y="210"/><di:waypoint x="385" y="210"/></bpmndi:BPMNEdge>
+  <bpmndi:BPMNEdge id="Edge_stockYes" bpmnElement="stockYes"><di:waypoint x="435" y="210"/><di:waypoint x="495" y="210"/></bpmndi:BPMNEdge>
+  <bpmndi:BPMNEdge id="Edge_stockNo" bpmnElement="stockNo"><di:waypoint x="410" y="235"/><di:waypoint x="450" y="420"/><di:waypoint x="1260" y="420"/><di:waypoint x="1260" y="210"/><di:waypoint x="1300" y="210"/></bpmndi:BPMNEdge>
+  <bpmndi:BPMNEdge id="Edge_f3" bpmnElement="f3"><di:waypoint x="625" y="210"/><di:waypoint x="690" y="210"/></bpmndi:BPMNEdge>
+  <bpmndi:BPMNEdge id="Edge_high" bpmnElement="high"><di:waypoint x="715" y="235"/><di:waypoint x="715" y="370"/><di:waypoint x="810" y="370"/></bpmndi:BPMNEdge>
+  <bpmndi:BPMNEdge id="Edge_normal" bpmnElement="normal"><di:waypoint x="740" y="210"/><di:waypoint x="1000" y="210"/></bpmndi:BPMNEdge>
+  <bpmndi:BPMNEdge id="Edge_reviewDone" bpmnElement="reviewDone"><di:waypoint x="970" y="370"/><di:waypoint x="1065" y="370"/><di:waypoint x="1065" y="250"/></bpmndi:BPMNEdge>
+  <bpmndi:BPMNEdge id="Edge_f4" bpmnElement="f4"><di:waypoint x="1130" y="210"/><di:waypoint x="1190" y="210"/></bpmndi:BPMNEdge>
+  <bpmndi:BPMNEdge id="Edge_paid" bpmnElement="paid"><di:waypoint x="1240" y="195"/><di:waypoint x="1300" y="195"/></bpmndi:BPMNEdge>
+  <bpmndi:BPMNEdge id="Edge_declined" bpmnElement="declined"><di:waypoint x="1240" y="225"/><di:waypoint x="1270" y="225"/><di:waypoint x="1270" y="235"/><di:waypoint x="1300" y="235"/></bpmndi:BPMNEdge>
+  <bpmndi:BPMNEdge id="Edge_f5" bpmnElement="f5"><di:waypoint x="1420" y="210"/><di:waypoint x="1490" y="228"/></bpmndi:BPMNEdge>
+ </bpmndi:BPMNPlane></bpmndi:BPMNDiagram></bpmn:definitions>
