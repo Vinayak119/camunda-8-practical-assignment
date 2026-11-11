@@ -8,7 +8,6 @@ camunda:
       method: none
     grpc-address: http://localhost:26500
     rest-address: http://localhost:8080
-    prefer-rest-over-grpc: true
 
 app:
   mock-api-base-url: http://localhost:8081/mock
