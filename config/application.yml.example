@@ -4,12 +4,14 @@ server:
 camunda:
   client:
     mode: self-managed
-    grpc-address: ${ZEEBE_CLIENT_BROKER_GATEWAY_ADDRESS:http://localhost:26500}
-    rest-address: ${ZEEBE_CLIENT_REST_ADDRESS:http://localhost:8080}
-    prefer-rest-over-grpc: false
+    auth:
+      method: none
+    grpc-address: http://localhost:26500
+    rest-address: http://localhost:8080
+    prefer-rest-over-grpc: true
 
 app:
-  mock-api-base-url: ${MOCK_API_BASE_URL:http://localhost:8081/mock}
+  mock-api-base-url: http://localhost:8081/mock
 
 logging:
   level:
