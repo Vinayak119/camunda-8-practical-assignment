@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_Hospital" targetNamespace="http://example.edu/camunda/hospital">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_Hospital" targetNamespace="http://example.edu/camunda/hospital">
  <bpmn:process id="hospitalAppointmentProcess" name="Lab 3 - Appointment and Triage" isExecutable="true">
   <bpmn:startEvent id="Start" name="Appointment request"><bpmn:outgoing>f1</bpmn:outgoing></bpmn:startEvent>
   <bpmn:serviceTask id="RegisterSlots" name="Validate registration and query mock schedule"><bpmn:extensionElements><zeebe:taskDefinition type="hospital-register-and-slots"/></bpmn:extensionElements><bpmn:incoming>f1</bpmn:incoming><bpmn:outgoing>f2</bpmn:outgoing></bpmn:serviceTask>
-  <bpmn:businessRuleTask id="TriageDecision" name="Classify request using DMN" camunda:decisionRef="triageDecision" camunda:resultVariable="triageResult"><bpmn:incoming>f2</bpmn:incoming><bpmn:outgoing>f3</bpmn:outgoing></bpmn:businessRuleTask>
+  <bpmn:businessRuleTask id="TriageDecision" name="Classify request using DMN"><bpmn:extensionElements><zeebe:calledDecision decisionId="triageDecision" resultVariable="triageResult"/></bpmn:extensionElements><bpmn:incoming>f2</bpmn:incoming><bpmn:outgoing>f3</bpmn:outgoing></bpmn:businessRuleTask>
   <bpmn:exclusiveGateway id="TriageGateway" name="Urgency category"><bpmn:incoming>f3</bpmn:incoming><bpmn:outgoing>urgent</bpmn:outgoing><bpmn:outgoing>review</bpmn:outgoing><bpmn:outgoing>routine</bpmn:outgoing></bpmn:exclusiveGateway>
-  <bpmn:userTask id="UrgentAssessment" name="Immediate human assessment (simulation)"><bpmn:incoming>urgent</bpmn:incoming><bpmn:outgoing>urgentDone</bpmn:outgoing></bpmn:userTask>
-  <bpmn:userTask id="StaffReview" name="Staff review / no-slot follow-up"><bpmn:incoming>review</bpmn:incoming><bpmn:incoming>noSlots</bpmn:incoming><bpmn:outgoing>reviewDone</bpmn:outgoing></bpmn:userTask>
+  <bpmn:userTask id="UrgentAssessment" name="Immediate human assessment (simulation)"><bpmn:extensionElements><zeebe:assignmentDefinition assignee="demo"/><zeebe:userTask/></bpmn:extensionElements><bpmn:incoming>urgent</bpmn:incoming><bpmn:outgoing>urgentDone</bpmn:outgoing></bpmn:userTask>
+  <bpmn:userTask id="StaffReview" name="Staff review / no-slot follow-up"><bpmn:extensionElements><zeebe:assignmentDefinition assignee="demo"/><zeebe:userTask/></bpmn:extensionElements><bpmn:incoming>review</bpmn:incoming><bpmn:incoming>noSlots</bpmn:incoming><bpmn:outgoing>reviewDone</bpmn:outgoing></bpmn:userTask>
   <bpmn:exclusiveGateway id="SlotsGateway" name="Slot available?"><bpmn:incoming>routine</bpmn:incoming><bpmn:outgoing>hasSlot</bpmn:outgoing><bpmn:outgoing>noSlots</bpmn:outgoing></bpmn:exclusiveGateway>
   <bpmn:serviceTask id="Finalize" name="Set appointment status"><bpmn:extensionElements><zeebe:taskDefinition type="hospital-finalize"/></bpmn:extensionElements><bpmn:incoming>urgentDone</bpmn:incoming><bpmn:incoming>reviewDone</bpmn:incoming><bpmn:incoming>hasSlot</bpmn:incoming><bpmn:outgoing>f4</bpmn:outgoing></bpmn:serviceTask>
   <bpmn:endEvent id="End" name="Request handled"><bpmn:incoming>f4</bpmn:incoming></bpmn:endEvent>
@@ -19,4 +19,25 @@
   <bpmn:sequenceFlow id="noSlots" sourceRef="SlotsGateway" targetRef="StaffReview"><bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">= hasAvailability = false</bpmn:conditionExpression></bpmn:sequenceFlow>
   <bpmn:sequenceFlow id="reviewDone" sourceRef="StaffReview" targetRef="Finalize"/><bpmn:sequenceFlow id="f4" sourceRef="Finalize" targetRef="End"/>
  </bpmn:process>
-</bpmn:definitions>
+<bpmndi:BPMNDiagram id="Diagram_hospitalAppointmentProcess"><bpmndi:BPMNPlane id="Plane_hospitalAppointmentProcess" bpmnElement="hospitalAppointmentProcess">
+  <bpmndi:BPMNShape id="Shape_Start" bpmnElement="Start"><dc:Bounds x="70" y="210" width="36" height="36"/></bpmndi:BPMNShape>
+  <bpmndi:BPMNShape id="Shape_RegisterSlots" bpmnElement="RegisterSlots"><dc:Bounds x="180" y="170" width="150" height="80"/></bpmndi:BPMNShape>
+  <bpmndi:BPMNShape id="Shape_TriageDecision" bpmnElement="TriageDecision"><dc:Bounds x="410" y="170" width="130" height="80"/></bpmndi:BPMNShape>
+  <bpmndi:BPMNShape id="Shape_TriageGateway" bpmnElement="TriageGateway" isMarkerVisible="true"><dc:Bounds x="600" y="185" width="50" height="50"/></bpmndi:BPMNShape>
+  <bpmndi:BPMNShape id="Shape_UrgentAssessment" bpmnElement="UrgentAssessment"><dc:Bounds x="720" y="50" width="170" height="80"/></bpmndi:BPMNShape>
+  <bpmndi:BPMNShape id="Shape_StaffReview" bpmnElement="StaffReview"><dc:Bounds x="720" y="250" width="180" height="80"/></bpmndi:BPMNShape>
+  <bpmndi:BPMNShape id="Shape_SlotsGateway" bpmnElement="SlotsGateway" isMarkerVisible="true"><dc:Bounds x="760" y="430" width="50" height="50"/></bpmndi:BPMNShape>
+  <bpmndi:BPMNShape id="Shape_Finalize" bpmnElement="Finalize"><dc:Bounds x="1040" y="170" width="130" height="80"/></bpmndi:BPMNShape>
+  <bpmndi:BPMNShape id="Shape_End" bpmnElement="End"><dc:Bounds x="1260" y="210" width="36" height="36"/></bpmndi:BPMNShape>
+  <bpmndi:BPMNEdge id="Edge_f1" bpmnElement="f1"><di:waypoint x="106" y="228"/><di:waypoint x="180" y="210"/></bpmndi:BPMNEdge>
+  <bpmndi:BPMNEdge id="Edge_f2" bpmnElement="f2"><di:waypoint x="330" y="210"/><di:waypoint x="410" y="210"/></bpmndi:BPMNEdge>
+  <bpmndi:BPMNEdge id="Edge_f3" bpmnElement="f3"><di:waypoint x="540" y="210"/><di:waypoint x="600" y="210"/></bpmndi:BPMNEdge>
+  <bpmndi:BPMNEdge id="Edge_urgent" bpmnElement="urgent"><di:waypoint x="625" y="185"/><di:waypoint x="650" y="90"/><di:waypoint x="720" y="90"/></bpmndi:BPMNEdge>
+  <bpmndi:BPMNEdge id="Edge_review" bpmnElement="review"><di:waypoint x="625" y="235"/><di:waypoint x="650" y="290"/><di:waypoint x="720" y="290"/></bpmndi:BPMNEdge>
+  <bpmndi:BPMNEdge id="Edge_routine" bpmnElement="routine"><di:waypoint x="650" y="210"/><di:waypoint x="680" y="210"/><di:waypoint x="680" y="455"/><di:waypoint x="760" y="455"/></bpmndi:BPMNEdge>
+  <bpmndi:BPMNEdge id="Edge_urgentDone" bpmnElement="urgentDone"><di:waypoint x="890" y="90"/><di:waypoint x="960" y="90"/><di:waypoint x="960" y="210"/><di:waypoint x="1040" y="210"/></bpmndi:BPMNEdge>
+  <bpmndi:BPMNEdge id="Edge_hasSlot" bpmnElement="hasSlot"><di:waypoint x="810" y="455"/><di:waypoint x="900" y="455"/><di:waypoint x="900" y="250"/><di:waypoint x="1105" y="250"/></bpmndi:BPMNEdge>
+  <bpmndi:BPMNEdge id="Edge_noSlots" bpmnElement="noSlots"><di:waypoint x="760" y="455"/><di:waypoint x="700" y="455"/><di:waypoint x="700" y="330"/><di:waypoint x="810" y="330"/></bpmndi:BPMNEdge>
+  <bpmndi:BPMNEdge id="Edge_reviewDone" bpmnElement="reviewDone"><di:waypoint x="900" y="290"/><di:waypoint x="970" y="290"/><di:waypoint x="970" y="210"/><di:waypoint x="1040" y="210"/></bpmndi:BPMNEdge>
+  <bpmndi:BPMNEdge id="Edge_f4" bpmnElement="f4"><di:waypoint x="1170" y="210"/><di:waypoint x="1260" y="228"/></bpmndi:BPMNEdge>
+ </bpmndi:BPMNPlane></bpmndi:BPMNDiagram></bpmn:definitions>
