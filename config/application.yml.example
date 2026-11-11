@@ -1,20 +1,15 @@
 server:
-  port: 8080
+  port: 8081
 
 camunda:
   client:
     mode: self-managed
-    auth:
-      client-id: ${ZEEBE_CLIENT_ID:}
-      client-secret: ${ZEEBE_CLIENT_SECRET:}
-    zeebe:
-      grpc-address: ${ZEEBE_CLIENT_BROKER_GATEWAY_ADDRESS:http://localhost:26500}
-      rest-address: ${ZEEBE_CLIENT_REST_ADDRESS:http://localhost:8080}
-      # For local development only; do not enable plaintext against production.
-      prefer-rest-over-grpc: false
+    grpc-address: ${ZEEBE_CLIENT_BROKER_GATEWAY_ADDRESS:http://localhost:26500}
+    rest-address: ${ZEEBE_CLIENT_REST_ADDRESS:http://localhost:8080}
+    prefer-rest-over-grpc: false
 
 app:
-  mock-api-base-url: ${MOCK_API_BASE_URL:http://localhost:8080/mock}
+  mock-api-base-url: ${MOCK_API_BASE_URL:http://localhost:8081/mock}
 
 logging:
   level:
