@@ -1,7 +1,7 @@
 package edu.camunda.labs;
 
-import io.camunda.zeebe.client.api.response.ActivatedJob;
-import io.camunda.zeebe.spring.client.annotation.JobWorker;
+import io.camunda.client.annotation.JobWorker;
+import io.camunda.client.api.response.ActivatedJob;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -15,7 +15,7 @@ public class WorkflowWorkers {
         this.rest = RestClient.builder().baseUrl(mockApiBaseUrl).build();
     }
 
-    @JobWorker(type = "loan-validate")
+    @JobWorker(type = "loan-validate", fetchAllVariables = true)
     public Map<String, Object> validateLoan(final ActivatedJob job) {
         Map<String, Object> v = job.getVariablesAsMap();
         boolean valid = nonBlank(v.get("applicantId")) && number(v.get("requestedAmount")) > 0
@@ -23,7 +23,7 @@ public class WorkflowWorkers {
         return Map.of("validationPassed", valid);
     }
 
-    @JobWorker(type = "loan-credit-check")
+    @JobWorker(type = "loan-credit-check", fetchAllVariables = true)
     public Map<String, Object> creditCheck(final ActivatedJob job) {
         Map<String, Object> v = job.getVariablesAsMap();
         Map<String, Object> req = new HashMap<>();
@@ -32,7 +32,7 @@ public class WorkflowWorkers {
         return rest.post().uri("/credit-assessment").body(req).retrieve().body(Map.class);
     }
 
-    @JobWorker(type = "order-validate-inventory")
+    @JobWorker(type = "order-validate-inventory", fetchAllVariables = true)
     public Map<String, Object> validateOrder(final ActivatedJob job) {
         Map<String, Object> v = job.getVariablesAsMap();
         int qty = number(v.get("quantity"));
@@ -48,7 +48,7 @@ public class WorkflowWorkers {
         return result;
     }
 
-    @JobWorker(type = "order-payment")
+    @JobWorker(type = "order-payment", fetchAllVariables = true)
     public Map<String, Object> processPayment(final ActivatedJob job) {
         Map<String, Object> v = job.getVariablesAsMap();
         Map<String, Object> req = new HashMap<>(v);
@@ -56,7 +56,7 @@ public class WorkflowWorkers {
         return rest.post().uri("/payment").body(req).retrieve().body(Map.class);
     }
 
-    @JobWorker(type = "hospital-register-and-slots")
+    @JobWorker(type = "hospital-register-and-slots", fetchAllVariables = true)
     public Map<String, Object> registerAndSlots(final ActivatedJob job) {
         Map<String, Object> v = job.getVariablesAsMap();
         boolean valid = nonBlank(v.get("patientRef")) && nonBlank(v.get("appointmentPreference"));
@@ -69,7 +69,7 @@ public class WorkflowWorkers {
         return result;
     }
 
-    @JobWorker(type = "loan-finalize")
+    @JobWorker(type = "loan-finalize", fetchAllVariables = true)
     public Map<String, Object> finalizeLoan(final ActivatedJob job) {
         Map<String, Object> v = job.getVariablesAsMap();
         String decision = resultValue(v.get("loanDecisionResult"), "decision", "Rejected");
@@ -80,7 +80,7 @@ public class WorkflowWorkers {
         return Map.of("finalStatus", status);
     }
 
-    @JobWorker(type = "order-finalize")
+    @JobWorker(type = "order-finalize", fetchAllVariables = true)
     public Map<String, Object> finalizeOrder(final ActivatedJob job) {
         Map<String, Object> v = job.getVariablesAsMap();
         String priority = resultValue(v.get("orderPriorityResult"), "priority", "Standard");
@@ -94,7 +94,7 @@ public class WorkflowWorkers {
         return Map.of("orderStatus", status);
     }
 
-    @JobWorker(type = "hospital-finalize")
+    @JobWorker(type = "hospital-finalize", fetchAllVariables = true)
     public Map<String, Object> finalizeHospital(final ActivatedJob job) {
         Map<String, Object> v = job.getVariablesAsMap();
         String triage = resultValue(v.get("triageResult"), "category", "Routine");
@@ -104,12 +104,9 @@ public class WorkflowWorkers {
     }
 
     private String resultValue(Object result, String key, String fallback) {
-        if (result instanceof Map<?, ?> values && values.get(key) != null) {
-            return String.valueOf(values.get(key));
-        }
+        if (result instanceof Map<?, ?> values && values.get(key) != null) return String.valueOf(values.get(key));
         return result == null ? fallback : String.valueOf(result);
     }
-
     private boolean nonBlank(Object o) { return o != null && !String.valueOf(o).isBlank(); }
     private int number(Object o) { try { return Integer.parseInt(String.valueOf(o)); } catch (Exception e) { return 0; } }
     private double decimal(Object o) { try { return Double.parseDouble(String.valueOf(o)); } catch (Exception e) { return 0; } }
