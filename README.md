@@ -1,70 +1,63 @@
-# Camunda 8 Practical Assignment — Labs 1–3 Starter Bundle
+# Camunda 8 Practical Assignment — Labs 1–3
 
-This bundle provides starter BPMN/DMN models, a Java Spring Boot worker, mock REST endpoints, synthetic test inputs, and deployment/testing instructions for all three labs.
+Educational BPMN/DMN models, Java Spring Boot workers, mock REST services, and synthetic tests for three Camunda 8 workflows.
 
-## Important scope and assumptions
-- Designed as an educational starter for **Camunda 8** with a reachable Zeebe gateway (Camunda SaaS or a local/self-managed cluster).
-- The Spring Boot app uses the Camunda 8 Java client through `spring-boot-starter-camunda`/Zeebe client dependencies. Configure your cluster endpoint and credentials in environment variables.
-- REST integration is demonstrated by Java workers calling the included mock REST endpoints. If your course specifically requires a native Camunda REST Connector template, add/configure that template in your target cluster and replace the corresponding worker task.
-- Hospital triage rules are **educational routing rules only**, not clinical guidance. Use synthetic patient references only.
-- This is a starter bundle, not evidence of deployment. Capture your own screenshots from your running environment.
+## Target stack
+- Camunda 8.7.x (the worker dependency is pinned to 8.7.5)
+- Java 21
+- Spring Boot 3.4.x
+- Maven 3.9+
 
-## Contents
-- `models/lab1-loan.bpmn`, `models/lab1-loan.dmn`
-- `models/lab2-ecommerce.bpmn`, `models/lab2-priority.dmn`
-- `models/lab3-hospital.bpmn`, `models/lab3-triage.dmn`
-- `worker/` Spring Boot worker + mock REST API
-- `tests/test-cases.json` sample test cases
-- `config/application.yml.example` configuration example
+The local worker app listens on port **8081**. The local Camunda Orchestration Cluster REST API remains on **8080**, and the Zeebe gRPC gateway remains on **26500**.
 
-## Prerequisites
-1. Java 21 (or a version supported by your chosen Camunda 8 client/runtime).
-2. Maven 3.9+.
-3. Access to a Camunda 8 cluster and its Zeebe gateway.
-4. Camunda 8 Modeler to inspect/edit BPMN and DMN files.
+## Repository layout
+- `models/`: three BPMN processes and their matching DMN decision tables
+- `worker/`: Spring Boot application, mock REST endpoints, and Zeebe job workers
+- `config/application.yml.example`: local development configuration
+- `tests/test-cases.json`: synthetic test variables
+- `docs/`: mock API examples and submission checklist
 
-## Configure
-Copy `config/application.yml.example` to `worker/src/main/resources/application.yml`, then fill in your own endpoint and credentials. Do not commit secrets.
+## Run the worker
+1. Start your Camunda 8.7.x local cluster first. Confirm the Orchestration Cluster REST API at `http://localhost:8080` and Zeebe gateway at `http://localhost:26500` are reachable.
+2. From the repository root, copy `config/application.yml.example` to `worker/src/main/resources/application.yml`. Keep this local configuration out of Git; `.gitignore` excludes it.
+3. Open a terminal in the `worker` directory and run:
 
-Environment variables supported:
-- `ZEEBE_CLIENT_CLOUD_CLUSTER_ID`
-- `ZEEBE_CLIENT_CLOUD_CLIENT_ID`
-- `ZEEBE_CLIENT_CLOUD_CLIENT_SECRET`
-- `ZEEBE_CLIENT_BROKER_GATEWAY_ADDRESS` (for self-managed)
-- `ZEEBE_CLIENT_SECURITY_PLAINTEXT` (set `true` only for local non-TLS development)
-- `MOCK_API_BASE_URL` (defaults to `http://localhost:8080/mock`)
-
-The exact client properties vary by Camunda client version and deployment type; use the application configuration appropriate to your installed Camunda 8 release.
-
-## Build and run
-From `worker/`:
 ```bash
 mvn clean package
 mvn spring-boot:run
 ```
-The application exposes mock endpoints under `/mock`. It also registers workers for the task types used in the BPMN files.
 
-## Deploy models
-Use Camunda 8 Modeler or your cluster's deployment workflow to deploy each `.bpmn` and its matching `.dmn` file together. Ensure each DMN decision ID matches the `camunda:decisionRef` in the corresponding BPMN business-rule task:
-- `loanDecision`
-- `orderPriorityDecision`
-- `triageDecision`
+The worker application runs at `http://localhost:8081`. It registers the task types defined in the BPMN models and hosts mock endpoints under `/mock`.
 
-After deployment, start instances with the sample variables in `tests/test-cases.json`. Inspect user tasks in Tasklist and process state/incidents in Operate.
+## Deploy the models
+Open each DMN file in Camunda Modeler and deploy it to the same cluster. Then open and deploy its matching BPMN file:
+- `lab1-loan.dmn` then `lab1-loan.bpmn`
+- `lab2-priority.dmn` then `lab2-ecommerce.bpmn`
+- `lab3-triage.dmn` then `lab3-hospital.bpmn`
 
-## Process variables (core)
-| Lab | Variables |
+The BPMN business rule tasks use Camunda 8 `zeebe:calledDecision` extensions. Their decision IDs are `loanDecision`, `orderPriorityDecision`, and `triageDecision`.
+
+## Start process instances
+Use the worker's process-start endpoints after deploying the process models:
+- `POST http://localhost:8081/api/process-instances/loan`
+- `POST http://localhost:8081/api/process-instances/ecommerce`
+- `POST http://localhost:8081/api/process-instances/hospital`
+
+Each endpoint accepts the process variables as a JSON object. Example request bodies and scenarios are documented in `tests/test-cases.json`.
+
+## Observe and complete
+- Open Tasklist at `http://localhost:8080/tasklist` to see and complete manual review / staff review tasks.
+- Open Operate at `http://localhost:8080/operate` to inspect process instances, variables, incidents, and completed paths.
+- For controlled failure tests, set `simulateFailure: true` in the process variables. The mock REST API returns HTTP 503 and the worker fails the job, producing a retry/incident path depending on job retry configuration.
+
+## Process variables
+| Lab | Core variables |
 |---|---|
 | Loan | `applicantId`, `requestedAmount`, `monthlyIncome`, `employmentYears`, `validationPassed`, `creditScore`, `creditStatus`, `loanDecisionResult`, `reviewOutcome`, `finalStatus` |
 | E-commerce | `customerRef`, `productId`, `quantity`, `unitPrice`, `orderValue`, `stockAvailable`, `paymentStatus`, `deliveryPreference`, `customerCategory`, `orderPriorityResult`, `reviewOutcome`, `orderStatus` |
 | Hospital | `patientRef`, `appointmentPreference`, `symptomsSummary`, `urgencyIndicator`, `registrationValid`, `availableSlots`, `appointmentBooked`, `triageResult`, `staffReviewOutcome`, `appointmentStatus` |
 
-## Failure/recovery exercise
-For a controlled demo, send `X-Demo-Fail: true` to one of the mock endpoints or set `simulateFailure: true` in a request. The worker will throw an error when it receives that flag, creating a retry/incident path depending on the cluster retry configuration. Remove the flag and retry the job in Operate where supported.
+## Submission checklist
+See `docs/submission-checklist.md`. Validate, deploy, execute sample instances, record actual outcomes, and capture your own Modeler, Tasklist, and Operate screenshots. This starter does not fabricate execution evidence.
 
-## Before submission
-- Open and validate each model in Camunda 8 Modeler.
-- Deploy and run multiple instances.
-- Record actual results, not just expected results.
-- Take your own screenshots from Modeler, Tasklist, and Operate.
-- Document any version-specific changes made to connectors, worker configuration, and deployment.
+Hospital triage decisions are educational routing examples only and are not clinical guidance. Use synthetic patient references only.
